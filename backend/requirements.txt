@@ -1,0 +1,14 @@
+fastapi
+uvicorn
+python-dotenv
+requests
+pydantic
+groq
+tavily-python
+pymupdf
+python-docx
+pillow
+beautifulsoup4
+lxml
+python-multipart
+httpx
