@@ -1,5 +1,7 @@
 # AuraFlow AI - Strategic Engine
 
+?? **Live Demo:** https://auraflow-frontend-p0iqp833i-leharinshainsha05-stacks-projects.vercel.app
+
 AuraFlow is an AI-powered project management and strategic planning platform built for the modern startup ecosystem.
 
 ## Project Structure
