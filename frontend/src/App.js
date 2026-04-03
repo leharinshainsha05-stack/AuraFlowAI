@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './App.css';
 
-const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000/api';
+const API_BASE = process.env.REACT_APP_API_BASE || 'https://auraflow-backend-nu2p.onrender.com/api';
 
 function App() {
   const [showFlash, setShowFlash] = useState(true);
