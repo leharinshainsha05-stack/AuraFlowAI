@@ -36,6 +36,7 @@ function App() {
   const [checkingProgress, setCheckingProgress] = useState(null);
   const [completedDays, setCompletedDays] = useState({});
   const [reminders, setReminders] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ── Chat State ─────────────────────────────────────────────────
   const [chatOpen, setChatOpen] = useState(false);
@@ -67,6 +68,7 @@ function App() {
 }, []);// eslint-disable-line react-hooks/exhaustive-deps
 
   const attemptNavigation = (section) => {
+    setSidebarOpen(false); // add this line
     if (!isAuthenticated) {
       setPendingSection(section);
       setShowLogin(true);
@@ -126,6 +128,7 @@ function App() {
   };
 
   const openProject = (project) => {
+    setSidebarOpen(false); // add this line
     setActiveProjectId(project.id);
     setActiveSection('view');
     if (project.source === 'soul') {
@@ -139,6 +142,7 @@ function App() {
   };
 
   const startNew = () => {
+    setSidebarOpen(false); // add this line
     setActiveProjectId(null);
     setActiveSection('new');
     setStep(1);
@@ -521,8 +525,8 @@ function App() {
   };
 
   // ── Render Sidebar ─────────────────────────────────────────────
-  const renderSidebar = () => (
-    <div className="sidebar">
+  const renderSidebar_content = () => (
+    <>
       <div className="sidebar-header" onClick={startNew} style={{ cursor: 'pointer' }}>
         <h1>🌊 AuraFlow</h1>
         <p>Strategic Engine</p>
@@ -590,7 +594,7 @@ function App() {
           {chatOpen ? '✕ Close Assistant' : '💬 Ask AuraFlow AI'}
         </button>
       </div>
-    </div>
+    </>
   );
 
   // ── Chat Panel ─────────────────────────────────────────────────
@@ -1226,21 +1230,42 @@ function App() {
   };
 
   // ── Main Return ────────────────────────────────────────────────
-  return (
-    <>
-      {renderAuthModal()}
-      <div className="layout">
-        {renderSidebar()}
-        <div className="content-area">
+return (
+  <>
+    {renderAuthModal()}
+
+    {/* Hamburger Button - Mobile Only */}
+    <button
+      className={`hamburger-btn ${sidebarOpen ? 'open' : ''}`}
+      onClick={() => setSidebarOpen(o => !o)}
+      aria-label="Toggle menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    {/* Overlay - closes sidebar when tapped */}
+    {sidebarOpen && (
+      <div
+        className="sidebar-overlay"
+        onClick={() => setSidebarOpen(false)}
+      />
+    )}
+
+    <div className="layout">
+      <div className={`sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
+        {renderSidebar_content()}
+      </div>
+      <div className="content-area">
           {activeSection === 'new' && renderNewProject()}
           {activeSection === 'soul' && renderSoulSearch()}
           {activeSection === 'file' && renderFileManager()}
           {activeSection === 'view' && renderProjectView()}
           {activeSection === 'multi' && renderMultiProject()}
           {activeSection === 'reminders' && renderReminders()}
-        </div>
-        {chatOpen && renderChatPanel()}
       </div>
+        {chatOpen && renderChatPanel()}
+    </div>
     </>
   );
 }

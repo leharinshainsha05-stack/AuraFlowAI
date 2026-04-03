@@ -1314,3 +1314,458 @@ input[type="file"]::file-selector-button:hover {
 .chat-input {
   border-radius: 12px !important;
 }
+/* ═══════════════════════════════════════════════════════
+   AURAFLOW AI — MOBILE RESPONSIVE CSS
+   Add this at the VERY BOTTOM of your App.css
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Hamburger Button (hidden on desktop) ─────────────── */
+.hamburger-btn {
+  display: none;
+  position: fixed;
+  top: 14px;
+  left: 14px;
+  z-index: 2000;
+  background: linear-gradient(135deg, #00bfff, #0077b3);
+  border: none;
+  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(0, 191, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+.hamburger-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0, 191, 255, 0.4);
+}
+
+.hamburger-btn span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* Animated X when open */
+.hamburger-btn.open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.hamburger-btn.open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+.hamburger-btn.open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Sidebar Overlay (mobile only) ───────────────────── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 1500;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ══════════════════════════════════════════════════════
+   TABLET (max-width: 1024px)
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .layout {
+    flex-direction: row;
+  }
+
+  .sidebar {
+    width: 220px !important;
+    min-width: 220px !important;
+  }
+
+  .content-area {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .new-project-options {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .option-card {
+    width: 100% !important;
+  }
+
+  .segments {
+    grid-template-columns: 1fr 1fr !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   MOBILE (max-width: 768px)
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Show hamburger button */
+  .hamburger-btn {
+    display: flex !important;
+  }
+
+  /* Show overlay when sidebar open */
+  .sidebar-overlay {
+    display: block;
+  }
+
+  /* ── Layout ─────────────────────────────────────── */
+  .layout {
+    flex-direction: row;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ── Sidebar slides in from left ────────────────── */
+  .sidebar {
+    position: fixed !important;
+    top: 0 !important;
+    left: -280px !important;
+    height: 100vh !important;
+    width: 260px !important;
+    min-width: 260px !important;
+    z-index: 1600 !important;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow-y: auto;
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.5);
+  }
+
+  .sidebar.mobile-open {
+    left: 0 !important;
+  }
+
+  /* ── Content takes full width ────────────────────── */
+  .content-area {
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-top: 60px !important; /* space for hamburger */
+  }
+
+  .main-content {
+    padding: 16px !important;
+  }
+
+  /* ── Card padding ────────────────────────────────── */
+  .card {
+    padding: 20px 16px !important;
+  }
+
+  /* ── New Project options stack ───────────────────── */
+  .new-project-options {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .option-card {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 20px !important;
+  }
+
+  /* ── Steps indicator ─────────────────────────────── */
+  .steps {
+    gap: 8px !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    justify-content: flex-start !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .step {
+    min-width: 60px;
+    flex-shrink: 0;
+  }
+
+  .step span {
+    font-size: 0.62rem !important;
+  }
+
+  .step-number {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.78rem !important;
+  }
+
+  /* ── Inputs ──────────────────────────────────────── */
+  input,
+  textarea,
+  select {
+    font-size: 16px !important; /* prevents iOS zoom */
+    padding: 12px 14px !important;
+  }
+
+  /* ── Buttons ─────────────────────────────────────── */
+  .card button {
+    width: 100% !important;
+    padding: 13px !important;
+  }
+
+  /* ── Segments grid: single column ───────────────── */
+  .segments {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* ── Plan items stack vertically ────────────────── */
+  .plan-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 12px !important;
+  }
+
+  .day-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ── Phase cards ─────────────────────────────────── */
+  .phase-card {
+    padding: 14px !important;
+  }
+
+  /* ── Slide cards ─────────────────────────────────── */
+  .slide-card {
+    padding: 14px !important;
+  }
+
+  /* ── Soul display ────────────────────────────────── */
+  .soul-display {
+    gap: 10px !important;
+  }
+
+  /* ── Reminder cards ──────────────────────────────── */
+  .reminder-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  .reminder-right {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* ── Reminder stats ──────────────────────────────── */
+  .reminder-stats {
+    gap: 8px !important;
+  }
+
+  .stat-box {
+    padding: 12px 8px !important;
+    min-width: 60px;
+  }
+
+  .stat-num {
+    font-size: 1.6rem !important;
+  }
+
+  /* ── Multi project ───────────────────────────────── */
+  .loaded-project-card {
+    flex-direction: column !important;
+    gap: 6px !important;
+    padding: 12px !important;
+  }
+
+  .priority-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 12px !important;
+  }
+
+  .master-day {
+    padding: 12px !important;
+  }
+
+  .schedule-item {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+  }
+
+  /* ── Progress report ─────────────────────────────── */
+  .progress-report {
+    padding: 14px !important;
+  }
+
+  .status-badge {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* ── Chat panel ──────────────────────────────────── */
+  .chat-overlay {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 3000 !important;
+    padding: 0 !important;
+  }
+
+  .chat-panel {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 85vh !important;
+    border-radius: 20px 20px 0 0 !important;
+    border-bottom: none !important;
+  }
+
+  .chat-messages {
+    max-height: calc(85vh - 180px) !important;
+  }
+
+  .chat-quick-btns {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 8px 12px !important;
+  }
+
+  .quick-btn {
+    font-size: 0.75rem !important;
+    padding: 6px 10px !important;
+  }
+
+  /* ── View header ─────────────────────────────────── */
+  .view-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding-top: 8px !important;
+  }
+
+  .view-header h2 {
+    font-size: 1.2rem !important;
+  }
+
+  /* ── Project meta tags ───────────────────────────── */
+  .project-meta {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+  }
+
+  /* ── New project header ──────────────────────────── */
+  .new-project-header h2 {
+    font-size: 1.5rem !important;
+  }
+
+  /* ── File upload zone ────────────────────────────── */
+  .upload-zone {
+    padding: 20px 14px !important;
+  }
+
+  /* ── Gaps section ────────────────────────────────── */
+  .gaps-section {
+    padding: 12px !important;
+  }
+
+  /* ── Auth modal ──────────────────────────────────── */
+  .card[style*="width: 420px"] {
+    width: calc(100vw - 32px) !important;
+    padding: 24px 20px !important;
+  }
+
+  /* ── Scrollable reports ──────────────────────────── */
+  .soul-display,
+  .segregated,
+  .multi-results {
+    overflow-x: hidden;
+  }
+
+  /* ── Sources box ─────────────────────────────────── */
+  .sources-box {
+    padding: 12px !important;
+  }
+
+  /* ── Summary box ─────────────────────────────────── */
+  .soul-summary-box {
+    padding: 14px !important;
+  }
+
+  /* ── Motivation box ──────────────────────────────── */
+  .motivation-box {
+    padding: 12px !important;
+  }
+
+  /* ── Conflicts ───────────────────────────────────── */
+  .conflict-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 12px !important;
+  }
+
+  /* ── Risk cards ──────────────────────────────────── */
+  .risk-card {
+    flex-direction: column !important;
+    gap: 4px !important;
+    padding: 12px !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   SMALL MOBILE (max-width: 480px)
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .card {
+    padding: 16px 14px !important;
+    border-radius: 12px !important;
+  }
+
+  .main-content {
+    padding: 12px !important;
+  }
+
+  .new-project-header h2 {
+    font-size: 1.3rem !important;
+  }
+
+  .option-card {
+    padding: 16px !important;
+  }
+
+  .option-icon {
+    font-size: 1.8rem !important;
+  }
+
+  .option-card h3 {
+    font-size: 1rem !important;
+  }
+
+  .stat-box {
+    padding: 10px 6px !important;
+  }
+}
