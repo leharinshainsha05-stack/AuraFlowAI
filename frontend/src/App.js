@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import './App.css';
+import { motion } from 'framer-motion';
 
-const API_BASE = process.env.REACT_APP_API_BASE || 'https://auraflow-backend-nu2p.onrender.com/api';
+const API_BASE = process.env.REACT_APP_API_BASE || 'http://localhost:8000/api';
 
 function App() {
   const [showFlash, setShowFlash] = useState(true);
@@ -13,10 +14,12 @@ function App() {
   const [authView, setAuthView] = useState('login');
   const [authLoading, setAuthLoading] = useState(false);
   const [authError, setAuthError] = useState('');
+  const [systemAlert, setSystemAlert] = useState(null);
 
   const [savedProjects, setSavedProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
-  const [activeSection, setActiveSection] = useState('new');
+  const [activeSection, setActiveSection] = useState('home');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const [step, setStep] = useState(1);
@@ -36,7 +39,6 @@ function App() {
   const [checkingProgress, setCheckingProgress] = useState(null);
   const [completedDays, setCompletedDays] = useState({});
   const [reminders, setReminders] = useState([]);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // ── Chat State ─────────────────────────────────────────────────
   const [chatOpen, setChatOpen] = useState(false);
@@ -51,6 +53,14 @@ function App() {
     const timer = setTimeout(() => setShowFlash(false), 2500);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (systemAlert) {
+      const timer = setTimeout(() => setSystemAlert(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [systemAlert]);
+
   useEffect(() => {
   const params = new URLSearchParams(window.location.search);
   const loggedIn = params.get('logged_in');
@@ -67,9 +77,11 @@ function App() {
   }
 }, []);// eslint-disable-line react-hooks/exhaustive-deps
 
+
   const attemptNavigation = (section) => {
-    setSidebarOpen(false); // add this line
+    setIsSidebarOpen(false);
     if (!isAuthenticated) {
+
       setPendingSection(section);
       setShowLogin(true);
     } else {
@@ -128,7 +140,6 @@ function App() {
   };
 
   const openProject = (project) => {
-    setSidebarOpen(false); // add this line
     setActiveProjectId(project.id);
     setActiveSection('view');
     if (project.source === 'soul') {
@@ -142,7 +153,6 @@ function App() {
   };
 
   const startNew = () => {
-    setSidebarOpen(false); // add this line
     setActiveProjectId(null);
     setActiveSection('new');
     setStep(1);
@@ -167,7 +177,7 @@ function App() {
     return [];
   };
 
-  const getSourceIcon = (source) => source === 'soul' ? '🔍' : '📁';
+  const getSourceIcon = (source) => source === 'soul' ? '<svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' : '<svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>';
 
   const getDaysColor = (days) => {
     if (days <= 3) return '#ff6b6b';
@@ -218,7 +228,7 @@ function App() {
       const res = await axios.post(`${API_BASE}/soul-search`, projectData);
       setSoulReport(res.data.soul_report);
       setStep(2);
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { setSystemAlert('Error: ' + err.message); }
     setLoading(false);
   };
 
@@ -230,7 +240,7 @@ function App() {
       });
       setProjectPlan(res.data.project_plan);
       setStep(3);
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { setSystemAlert('Error: ' + err.message); }
     setLoading(false);
   };
 
@@ -248,14 +258,14 @@ function App() {
         project_type: projectData.project_type, days_remaining: 8, step: 4,
         soul_report: soulReport, project_plan: projectPlan, pitch_deck: res.data.pitch_deck
       });
-    } catch (err) { alert('Error: ' + err.message); }
+    } catch (err) { setSystemAlert('Error: ' + err.message); }
     setLoading(false);
   };
 
   // ── File Manager Handler ───────────────────────────────────────
   const handleFileUpload = async () => {
     if (!fileProject.name || !fileProject.deadline || files.length === 0) {
-      alert('Please fill all fields and upload at least one file!'); return;
+      setSystemAlert('Please fill all fields and upload at least one file!'); return;
     }
     setLoading(true);
     try {
@@ -286,7 +296,7 @@ function App() {
   // ── Multi Project Handler ──────────────────────────────────────
   const handleMultiProject = async () => {
     const fileProjects = savedProjects.filter(p => p.source === 'file');
-    if (fileProjects.length < 2) { alert('You need at least 2 analyzed file projects!'); return; }
+    if (fileProjects.length < 2) { setSystemAlert('You need at least 2 analyzed file projects!'); return; }
     setLoading(true);
     try {
       const res = await axios.post(`${API_BASE}/file-manager/multi-project`, {
@@ -389,7 +399,7 @@ function App() {
           <div className="sources-box">
             <h4>🔗 Sources Used</h4>
             {safeArray(r.key_sources).map((s, i) => (
-              <p key={i}>• <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#00bfff' }}>{s.title}</a></p>
+              <p key={i}>• <a href={s.url} target="_blank" rel="noreferrer" style={{ color: '#444' }}>{s.title}</a></p>
             ))}
           </div>
         )}
@@ -464,7 +474,7 @@ function App() {
     return (
       <>
         <h3>🗓️ Sequential Plan ({data.days_remaining} Days)</h3>
-        <p style={{ fontSize: '0.82rem', color: '#555' }}>
+        <p style={{ fontSize: '0.82rem', color: '#111111' }}>
           Tick completed days then click Check Progress for AI feedback.
         </p>
         <div className="plan">
@@ -483,16 +493,16 @@ function App() {
               <input type="checkbox"
                 checked={(completedDays[data.project_name] || []).includes(p.day)}
                 onChange={() => toggleDayComplete(data.project_name, p.day)}
-                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#00bfff' }} />
+                style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#444' }} />
             </div>
           ))}
         </div>
-        <button
+        <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }}
           onClick={() => handleCheckProgress(data)}
           disabled={checkingProgress !== null}
-          style={{ background: 'linear-gradient(135deg, #00bfff, #0077b3)', marginTop: '8px' }}>
+          style={{ background: 'linear-gradient(135deg, #2fb9d6, #10738a)', marginTop: '8px' }}>
           {checkingProgress === data.project_name ? '🔄 Analyzing...' : '📊 Check Progress'}
-        </button>
+        </motion.button>
         {r && (
           <div className="progress-report">
             <div className="progress-header">
@@ -525,15 +535,18 @@ function App() {
   };
 
   // ── Render Sidebar ─────────────────────────────────────────────
-  const renderSidebar_content = () => (
-    <>
+  const renderSidebar = () => (
+    <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
       <div className="sidebar-header" onClick={startNew} style={{ cursor: 'pointer' }}>
-        <h1>🌊 AuraFlow</h1>
+        <div style={{display:'flex', alignItems:'center'}}>
+          <img src="/logo192.png" alt="AuraFlow" style={{width: '32px', height: '32px', borderRadius: '50%', marginRight: '8px'}} />
+          <h1>AuraFlow</h1>
+        </div>
         <p>Strategic Engine</p>
       </div>
-      <button className="new-project-btn" onClick={startNew}>+ New Project</button>
+      <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className="new-project-btn" onClick={startNew}>+ New Project</motion.button>
       <div className="sidebar-section">
-        <span className="sidebar-label">📁 PROJECTS</span>
+        <span className="sidebar-label"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> PROJECTS</span>
         <div className="project-list">
           {savedProjects.filter(p => p.source !== 'multi').length === 0 && (
             <p className="no-projects">No projects yet.</p>
@@ -545,8 +558,8 @@ function App() {
               <div className="project-card-top">
                 <span className="project-card-icon">{getSourceIcon(p.source)}</span>
                 <span className="project-card-name">{p.project_name}</span>
-                <button className="delete-btn"
-                  onClick={e => { e.stopPropagation(); deleteProject(p.id); }}>✕</button>
+                <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className="delete-btn"
+                  onClick={e => { e.stopPropagation(); deleteProject(p.id); }}>✕</motion.button>
               </div>
               <div className="project-card-meta">
                 <span className="project-card-type">{p.project_type}</span>
@@ -561,40 +574,40 @@ function App() {
         </div>
       </div>
       <div className="sidebar-section">
-        <span className="sidebar-label">🛠️ TOOLS</span>
-        <button className={`tool-btn ${activeSection === 'multi' ? 'active' : ''}`}
+        <span className="sidebar-label"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>TOOLS</span>
+        <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className={`tool-btn ${activeSection === 'multi' ? 'active' : ''}`}
           onClick={() => attemptNavigation('multi')}>
-          🗂️ Multi-Project
+          <svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Multi-Project
           {savedProjects.filter(p => p.source === 'file').length >= 2 && (
             <span className="ready-badge">Ready</span>
           )}
-        </button>
-        <button className={`tool-btn ${activeSection === 'reminders' ? 'active' : ''}`}
+        </motion.button>
+        <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className={`tool-btn ${activeSection === 'reminders' ? 'active' : ''}`}
           onClick={() => attemptNavigation('reminders')}>
-          🔔 Reminders
+          <svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>Reminders
           {reminders.filter(r => r.urgency === 'high').length > 0 && (
             <span className="urgent-badge">{reminders.filter(r => r.urgency === 'high').length}</span>
           )}
-        </button>
+        </motion.button>
       </div>
 
       {/* Chat Button at bottom of sidebar */}
       <div style={{ padding: '12px', marginTop: 'auto' }}>
-        <button
+        <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }}
           onClick={() => setChatOpen(o => !o)}
           style={{
             width: '100%',
             background: chatOpen
-              ? 'linear-gradient(135deg, #00bfff, #0077b3)'
-              : 'linear-gradient(135deg, #00bfff, #00ccff)',
+              ? 'linear-gradient(135deg, #2fb9d6, #10738a)'
+              : 'linear-gradient(135deg, #2fb9d6, #5ee4ff)',
             border: 'none', borderRadius: '10px', padding: '12px',
             color: 'white', fontWeight: '600', cursor: 'pointer',
             fontSize: '0.88rem', marginTop: '0'
           }}>
           {chatOpen ? '✕ Close Assistant' : '💬 Ask AuraFlow AI'}
-        </button>
+        </motion.button>
       </div>
-    </>
+    </div>
   );
 
   // ── Chat Panel ─────────────────────────────────────────────────
@@ -603,7 +616,7 @@ function App() {
       <div className="chat-panel">
         <div className="chat-header">
           <div className="chat-header-info">
-            <span className="chat-avatar">🌊</span>
+            <img src="/logo192.png" alt="avatar" className="chat-avatar" style={{borderRadius: '50%', width:'36px', height:'36px'}} />
             <div>
               <span className="chat-title">AuraFlow Assistant</span>
               <span className="chat-subtitle">
@@ -611,20 +624,20 @@ function App() {
               </span>
             </div>
           </div>
-          <button className="chat-close" onClick={() => setChatOpen(false)}>✕</button>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className="chat-close" onClick={() => setChatOpen(false)}>✕</motion.button>
         </div>
 
         <div className="chat-messages">
           {chatMessages.map((msg, i) => (
             <div key={i} className={`chat-message ${msg.role}`}>
-              {msg.role === 'assistant' && <span className="chat-msg-avatar">🌊</span>}
+              {msg.role === 'assistant' && <img src="/logo192.png" alt="ai" className="chat-msg-avatar" style={{borderRadius: '50%', width:'28px', height:'28px'}} />}
               <div className="chat-bubble">{msg.content}</div>
               {msg.role === 'user' && <span className="chat-msg-avatar user-av">👤</span>}
             </div>
           ))}
           {chatLoading && (
             <div className="chat-message assistant">
-              <span className="chat-msg-avatar">🌊</span>
+              <img src="/logo192.png" alt="ai" className="chat-msg-avatar" style={{borderRadius: '50%', width:'28px', height:'28px'}} />
               <div className="chat-bubble typing">
                 <span></span><span></span><span></span>
               </div>
@@ -635,9 +648,9 @@ function App() {
 
         <div className="chat-quick-btns">
           {['What should I work on today?', 'Which project is at risk?', 'Summarize all my projects'].map((q, i) => (
-            <button key={i} className="quick-btn" onClick={() => setChatInput(q)}>
+            <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} key={i} className="quick-btn" onClick={() => setChatInput(q)}>
               {q}
-            </button>
+            </motion.button>
           ))}
         </div>
 
@@ -649,15 +662,26 @@ function App() {
             onChange={e => setChatInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && !chatLoading && handleChat()}
           />
-          <button className="chat-send" onClick={handleChat} disabled={chatLoading}>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className="chat-send" onClick={handleChat} disabled={chatLoading}>
             {chatLoading ? '...' : '➤'}
-          </button>
+          </motion.button>
         </div>
       </div>
     </div>
   );
 
   // ── Render New Project ─────────────────────────────────────────
+
+  const renderHome = () => (
+    <div className="home-dashboard" style={{ textAlign: 'center', marginTop: '10vh' }}>
+      <h1 style={{ fontSize: '3rem', marginBottom: '8px' }}>Welcome to AuraFlow</h1>
+      <p style={{ fontSize: '1.2rem', color: '#111111', marginBottom: '40px' }}>Your sketchbook for strategic planning and execution.</p>
+      <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={() => attemptNavigation('services')} style={{ fontSize: '1.5rem', padding: '20px 40px' }}>
+        Get Started →
+      </motion.button>
+    </div>
+  );
+
   const renderNewProject = () => (
     <div className="main-content">
       <div className="new-project-header">
@@ -666,13 +690,13 @@ function App() {
       </div>
       <div className="new-project-options">
         <div className="option-card" onClick={() => attemptNavigation('soul')}>
-          <span className="option-icon">🔍</span>
+          <span className="option-icon"><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
           <h3>Soul Search</h3>
           <p>Real-time market research, competitor analysis, and strategic positioning</p>
           <span className="option-tag">Research + Strategy</span>
         </div>
         <div className="option-card" onClick={() => attemptNavigation('file')}>
-          <span className="option-icon">📁</span>
+          <span className="option-icon"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></span>
           <h3>File Manager</h3>
           <p>Upload project files and AI will analyze, segregate, and create a deadline-aware plan</p>
           <span className="option-tag">Files + Planning</span>
@@ -694,7 +718,7 @@ function App() {
       </div>
       {step === 1 && (
         <div className="card">
-          <h2>🔍 Soul Search</h2>
+          <h2><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Soul Search</h2>
           <p>Enter your project details for real-time market research and strategic analysis.</p>
           <input placeholder="Project Name" value={projectData.project_name}
             onChange={e => setProjectData({ ...projectData, project_name: e.target.value })} />
@@ -705,7 +729,7 @@ function App() {
           <select value={projectData.depth}
             onChange={e => setProjectData({ ...projectData, depth: e.target.value })}>
             <option value="quick">⚡ Quick (10 mins)</option>
-            <option value="medium">🔍 Medium (45 mins)</option>
+            <option value="medium"><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Medium (45 mins)</option>
             <option value="deep">🧠 Deep (2 hours)</option>
           </select>
           <div style={{ marginTop: '4px' }}>
@@ -713,33 +737,33 @@ function App() {
               placeholder="🔗 Optional: Paste a specific URL or research paper link"
               value={projectData.specific_url}
               onChange={e => setProjectData({ ...projectData, specific_url: e.target.value })}
-              style={{ borderColor: projectData.specific_url ? '#00bfff' : '' }}
+              style={{ borderColor: projectData.specific_url ? '#444' : '' }}
             />
-            <p style={{ fontSize: '0.78rem', color: projectData.specific_url ? '#00bfff' : '#555', margin: '4px 0 0 4px' }}>
+            <p style={{ fontSize: '0.78rem', color: projectData.specific_url ? '#444' : '#111111', margin: '4px 0 0 4px' }}>
               {projectData.specific_url ? '🔗 Deep Fetch mode — AI will read this page alongside web research' : 'Leave empty for general web search only'}
             </p>
           </div>
-          <button onClick={handleSoulSearch} disabled={loading}>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={handleSoulSearch} disabled={loading}>
             {loading ? '🔄 Researching the web...' : '🚀 Find the Soul'}
-          </button>
+          </motion.button>
         </div>
       )}
       {step === 2 && (
         <div className="card">
           <h2>✨ Soul Report Ready!</h2>
           {renderSoulReportCard(soulReport)}
-          <button onClick={handleProjectPlan} disabled={loading}>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={handleProjectPlan} disabled={loading}>
             {loading ? '🔄 Generating...' : '📋 Generate Project Plan'}
-          </button>
+          </motion.button>
         </div>
       )}
       {step === 3 && (
         <div className="card">
           <h2>📋 Project Plan Ready!</h2>
           {renderProjectPlanCard(projectPlan)}
-          <button onClick={handlePitchDeck} disabled={loading}>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={handlePitchDeck} disabled={loading}>
             {loading ? '🔄 Generating...' : '🎯 Generate Pitch Deck'}
-          </button>
+          </motion.button>
         </div>
       )}
       {step === 4 && (
@@ -747,7 +771,7 @@ function App() {
           <h2>🎯 Pitch Deck Ready!</h2>
           {renderPitchDeckCard(pitchDeck)}
           <div className="saved-notice">✅ Project saved to sidebar!</div>
-          <button onClick={startNew}>🔄 Start New Project</button>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={startNew}>🔄 Start New Project</motion.button>
         </div>
       )}
     </div>
@@ -757,7 +781,7 @@ function App() {
   const renderFileManager = () => (
     <div className="main-content">
       <div className="card">
-        <h2>📁 File Manager</h2>
+        <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> File Manager</h2>
         <p>Upload your project files and AI will deeply analyze, expand ideas, and generate a deadline-aware plan.</p>
         <input placeholder="Project Name" value={fileProject.name}
           onChange={e => setFileProject({ ...fileProject, name: e.target.value })} />
@@ -769,7 +793,7 @@ function App() {
           <p>📂 Drag & drop files here or</p>
           <input type="file" multiple
             onChange={e => setFiles([...files, ...Array.from(e.target.files)])}
-            style={{ marginTop: '10px' }} />
+            style={{ marginTop: '6px' }} />
           {files.length > 0 && (
             <div className="file-list">
               {files.map((f, i) => <span key={i} className="file-tag">📄 {f.name}</span>)}
@@ -777,19 +801,19 @@ function App() {
           )}
         </div>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button onClick={handleFileUpload} disabled={loading} style={{ flex: 1 }}>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={handleFileUpload} disabled={loading} style={{ flex: 1 }}>
             {loading ? '🔄 Analyzing...' : '🧠 Analyze & Segregate'}
-          </button>
-          <button onClick={handleClear} disabled={loading}
-            style={{ background: '#1a1a2e', border: '1px solid #2a2a3a', flex: 'none', padding: '12px 20px', marginTop: '4px' }}>
+          </motion.button>
+          <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={handleClear} disabled={loading}
+            style={{ background: '#FFFFFF', border: '1px solid #1b4a7d', flex: 'none', padding: '12px 20px', marginTop: '4px' }}>
             🗑️ Clear
-          </button>
+          </motion.button>
         </div>
         {segregatedData && (
           <div className="segregated">
             <div className="saved-notice">✅ Project saved to sidebar!</div>
             <div className="project-meta">
-              <span className="meta-tag">📁 {segregatedData.project_type}</span>
+              <span className="meta-tag"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {segregatedData.project_type}</span>
               <span className="meta-tag">📅 {segregatedData.days_remaining} days remaining</span>
               <span className="meta-tag">🗓️ Due: {segregatedData.deadline}</span>
             </div>
@@ -822,7 +846,7 @@ function App() {
       return (
         <div className="main-content">
           <div className="view-header">
-            <h2>🔍 {project.project_name}</h2>
+            <h2><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> {project.project_name}</h2>
             <span className="view-type">{project.project_type}</span>
           </div>
           {project.soul_report && <div className="card"><h3>✨ Soul Report</h3>{renderSoulReportCard(project.soul_report)}</div>}
@@ -835,12 +859,12 @@ function App() {
     return (
       <div className="main-content">
         <div className="view-header">
-          <h2>📁 {project.project_name}</h2>
+          <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {project.project_name}</h2>
           <span className="view-type">{data?.project_type}</span>
         </div>
         <div className="card">
           <div className="project-meta">
-            <span className="meta-tag">📁 {data?.project_type}</span>
+            <span className="meta-tag"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {data?.project_type}</span>
             <span className="meta-tag">📅 {data?.days_remaining} days remaining</span>
             <span className="meta-tag">🗓️ Due: {data?.deadline}</span>
           </div>
@@ -869,7 +893,7 @@ function App() {
     return (
       <div className="main-content">
         <div className="card">
-          <h2>🗂️ Multi-Project Manager</h2>
+          <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Multi-Project Manager</h2>
           <p>Analyze all pending projects and get an optimized master plan.</p>
           {fileProjects.length === 0 && (
             <div className="empty-state">
@@ -900,9 +924,9 @@ function App() {
                 <div className="warning-box">⚠️ Add at least 2 file projects to generate a Master Plan.</div>
               )}
               {fileProjects.length >= 2 && (
-                <button onClick={handleMultiProject} disabled={loading}>
+                <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={handleMultiProject} disabled={loading}>
                   {loading ? '🔄 Generating Master Plan...' : '🧠 Generate Master Plan'}
-                </button>
+                </motion.button>
               )}
             </div>
           )}
@@ -997,7 +1021,7 @@ function App() {
     return (
       <div className="main-content">
         <div className="card">
-          <h2>🔔 Reminders</h2>
+          <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>Reminders</h2>
           <p>Auto-generated reminders based on your project deadlines, milestones, and gaps.</p>
           {reminders.length === 0 && (
             <div className="empty-state">
@@ -1036,18 +1060,18 @@ function App() {
                       <span className={`urgency-badge ${r.urgency}`}>
                         {r.urgency === 'high' ? '🔴 Urgent' : r.urgency === 'medium' ? '🟡 Soon' : '🟢 Upcoming'}
                       </span>
-                      <button className="dismiss-btn"
+                      <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className="dismiss-btn"
                         onClick={() => saveReminders(reminders.filter((_, idx) => idx !== i))}>
                         Dismiss
-                      </button>
+                      </motion.button>
                     </div>
                   </div>
                 ))}
               </div>
-              <button onClick={() => saveReminders([])}
-                style={{ background: '#1a1a2e', border: '1px solid #2a2a3a', marginTop: '8px' }}>
+              <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={() => saveReminders([])}
+                style={{ background: '#FFFFFF', border: '1px solid #1b4a7d', marginTop: '8px' }}>
                 🗑️ Clear All
-              </button>
+              </motion.button>
             </div>
           )}
         </div>
@@ -1058,7 +1082,7 @@ function App() {
   // ── Flash Screen & Login Modal ─────────────────────────────────
   if (showFlash) {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#121212', zIndex: 9999, position: 'relative' }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#030f1a', zIndex: 9999, position: 'relative' }}>
         <style>{`
            @keyframes professionalFade {
              0% { opacity: 0; transform: scale(0.98) translateY(10px); }
@@ -1067,7 +1091,7 @@ function App() {
              100% { opacity: 0; transform: scale(0.98) translateY(-10px); }
            }
          `}</style>
-        <h1 style={{ fontSize: '3.5rem', color: '#ffffff', fontWeight: 500, letterSpacing: '0.5px', margin: 0, animation: 'professionalFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <h1 style={{ fontSize: '3.5rem', color: '#111111', fontWeight: 500, letterSpacing: '0.5px', margin: 0, animation: 'professionalFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ marginRight: '8px' }}>🌊</span>AuraFlow
         </h1>
       </div>
@@ -1123,106 +1147,106 @@ function App() {
     );
 
     return (
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(10, 10, 15, 0.85)', backdropFilter: 'blur(10px)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div className="card" style={{ width: '420px', textAlign: 'center', padding: '30px 40px', background: '#13131a' }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(255, 255, 255, 0.9)', backdropFilter: 'blur(10px)', zIndex: 9000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="card" style={{ width: '420px', maxWidth: '90vw', textAlign: 'center', padding: '15px 20px', background: '#FFFFFF' }}>
 
           {authView === 'login' && (
             <>
-              <h2 style={{ color: '#ffffff', marginBottom: '4px', fontSize: '1.8rem' }}>🌊 AuraFlow Access</h2>
-              <p style={{ color: '#888', marginBottom: '24px', fontSize: '0.9rem' }}>Please authenticate to access the engine core.</p>
+              <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem' }}>🌊 AuraFlow Access</h2>
+              <p style={{ color: '#333', marginBottom: '10px', fontSize: '0.9rem' }}>Please authenticate to access the engine core.</p>
 
-              <input placeholder="Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '12px', textAlign: 'center' }} />
+              <input placeholder="Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '6px', textAlign: 'center' }} />
               <input type="password" placeholder="Password" value={loginForm.password} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, password: e.target.value }); }} style={{ marginBottom: '8px', textAlign: 'center' }} />
 
               {authError && (
-                <p style={{ color: '#ff4d4d', fontSize: '0.8rem', textAlign: 'left', margin: '0 0 10px 0' }}>
+                <p style={{ color: '#cc0000', fontSize: '0.8rem', textAlign: 'left', margin: '0 0 10px 0' }}>
                   {authError}
                 </p>
               )}
 
-              <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
-                <span style={{ color: '#00bfff', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setAuthView('forgot')}>Forgot password?</span>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '8px' }}>
+                <span style={{ color: '#444', fontSize: '0.8rem', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setAuthView('forgot')}>Forgot password?</span>
               </div>
 
-              <button style={{ width: '100%', padding: '12px', fontSize: '1rem', boxShadow: '0 4px 15px rgba(0, 191, 255, 0.2)' }} onClick={() => handleAuthSubmit('login')} disabled={authLoading}>
+              <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} style={{ width: '100%', padding: '8px', fontSize: '0.9rem', boxShadow: '0 4px 15px rgba(47, 185, 214, 0.2)' }} onClick={() => handleAuthSubmit('login')} disabled={authLoading}>
                 {authLoading ? 'Verifying...' : 'Login with Mail'}
-              </button>
+              </motion.button>
 
-              <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', color: '#555', fontSize: '0.75rem' }}>
-                <div style={{ flex: 1, height: '1px', background: '#2a2a3a' }}></div>
+              <div style={{ display: 'flex', alignItems: 'center', margin: '6px 0', color: '#111111', fontSize: '0.75rem' }}>
+                <div style={{ flex: 1, height: '1px', background: '#1b4a7d' }}></div>
                 <span style={{ padding: '0 10px', fontWeight: 'bold' }}>OR CONTINUE WITH</span>
-                <div style={{ flex: 1, height: '1px', background: '#2a2a3a' }}></div>
+                <div style={{ flex: 1, height: '1px', background: '#1b4a7d' }}></div>
               </div>
 
-              <button style={{ width: '100%', background: '#1a1a2e', border: '1px solid rgba(0,191,255,0.3)', color: '#fff', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }} onClick={handleGoogleLogin}>
+              <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} style={{ width: '100%', background: '#FFFFFF', border: '1px solid rgba(0,191,255,0.3)', color: '#111111', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }} onClick={handleGoogleLogin}>
                 {googleIcon} Login with Google
-              </button>
+              </motion.button>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <span style={{ color: '#888', fontSize: '0.85rem' }}>New here? <span style={{ color: '#00bfff', cursor: 'pointer', fontWeight: 'bold', marginLeft: '6px' }} onClick={() => setAuthView('signup')}>Sign up</span></span>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                <span style={{ color: '#333', fontSize: '0.85rem' }}>New here? <span style={{ color: '#444', cursor: 'pointer', fontWeight: 'bold', marginLeft: '6px' }} onClick={() => setAuthView('signup')}>Sign up</span></span>
               </div>
             </>
           )}
 
           {authView === 'signup' && (
             <>
-              <h2 style={{ color: '#ffffff', marginBottom: '4px', fontSize: '1.8rem' }}>🌊 Join AuraFlow</h2>
-              <p style={{ color: '#888', marginBottom: '24px', fontSize: '0.9rem' }}>Create an account to unlock the strategic engine.</p>
+              <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem' }}>🌊 Join AuraFlow</h2>
+              <p style={{ color: '#333', marginBottom: '10px', fontSize: '0.9rem' }}>Create an account to unlock the strategic engine.</p>
 
-              <input placeholder="Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '12px', textAlign: 'center' }} />
-              <input type="password" placeholder="Create Password" value={loginForm.password} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, password: e.target.value }); }} style={{ marginBottom: '20px', textAlign: 'center' }} />
+              <input placeholder="Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '6px', textAlign: 'center' }} />
+              <input type="password" placeholder="Create Password" value={loginForm.password} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, password: e.target.value }); }} style={{ marginBottom: '8px', textAlign: 'center' }} />
 
               {authError && (
-                <p style={{ color: '#ff4d4d', fontSize: '0.8rem', textAlign: 'left', margin: '-10px 0 10px 0' }}>
+                <p style={{ color: '#cc0000', fontSize: '0.8rem', textAlign: 'left', margin: '-10px 0 10px 0' }}>
                   {authError}
                 </p>
               )}
 
-              <button style={{ width: '100%', padding: '12px', fontSize: '1rem', boxShadow: '0 4px 15px rgba(0, 191, 255, 0.2)' }} onClick={() => handleAuthSubmit('signup')} disabled={authLoading}>
+              <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} style={{ width: '100%', padding: '8px', fontSize: '0.9rem', boxShadow: '0 4px 15px rgba(47, 185, 214, 0.2)' }} onClick={() => handleAuthSubmit('signup')} disabled={authLoading}>
                 {authLoading ? 'Creating...' : 'Register with Mail'}
-              </button>
+              </motion.button>
 
-              <div style={{ display: 'flex', alignItems: 'center', margin: '20px 0', color: '#555', fontSize: '0.75rem' }}>
-                <div style={{ flex: 1, height: '1px', background: '#2a2a3a' }}></div>
+              <div style={{ display: 'flex', alignItems: 'center', margin: '6px 0', color: '#111111', fontSize: '0.75rem' }}>
+                <div style={{ flex: 1, height: '1px', background: '#1b4a7d' }}></div>
                 <span style={{ padding: '0 10px', fontWeight: 'bold' }}>OR CONTINUE WITH</span>
-                <div style={{ flex: 1, height: '1px', background: '#2a2a3a' }}></div>
+                <div style={{ flex: 1, height: '1px', background: '#1b4a7d' }}></div>
               </div>
 
-              <button style={{ width: '100%', background: '#1a1a2e', border: '1px solid rgba(0,191,255,0.3)', color: '#fff', padding: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }} onClick={handleGoogleLogin}>
+              <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} style={{ width: '100%', background: '#FFFFFF', border: '1px solid rgba(0,191,255,0.3)', color: '#111111', padding: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'none' }} onClick={handleGoogleLogin}>
                 {googleIcon} Sign up with Google
-              </button>
+              </motion.button>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <span style={{ color: '#888', fontSize: '0.85rem' }}>Already have an account?<span style={{ color: '#00bfff', cursor: 'pointer', fontWeight: 'bold', marginLeft: '6px' }} onClick={() => setAuthView('login')}>Login</span></span>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                <span style={{ color: '#333', fontSize: '0.85rem' }}>Already have an account?<span style={{ color: '#444', cursor: 'pointer', fontWeight: 'bold', marginLeft: '6px' }} onClick={() => setAuthView('login')}>Login</span></span>
               </div>
             </>
           )}
 
           {authView === 'forgot' && (
             <>
-              <h2 style={{ color: '#ffffff', marginBottom: '8px', fontSize: '1.8rem' }}>🔒 Reset Credentials</h2>
-              <p style={{ color: '#888', marginBottom: '24px', fontSize: '0.9rem' }}>Enter your email. If registered, we will send an email containing your username alongside a reset password option.</p>
+              <h2 style={{ color: '#111111', marginBottom: '8px', fontSize: '1.4rem' }}>🔒 Reset Credentials</h2>
+              <p style={{ color: '#333', marginBottom: '10px', fontSize: '0.9rem' }}>Enter your email. If registered, we will send an email containing your username alongside a reset password option.</p>
 
-              <input placeholder="Registered Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '20px', textAlign: 'center' }} />
+              <input placeholder="Registered Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '8px', textAlign: 'center' }} />
 
               {authError && (
-                <p style={{ color: '#ff4d4d', fontSize: '0.8rem', textAlign: 'left', margin: '-10px 0 10px 0' }}>
+                <p style={{ color: '#cc0000', fontSize: '0.8rem', textAlign: 'left', margin: '-10px 0 10px 0' }}>
                   {authError}
                 </p>
               )}
 
-              <button style={{ width: '100%', padding: '12px', fontSize: '1rem', boxShadow: '0 4px 15px rgba(0, 191, 255, 0.2)' }} onClick={() => handleAuthSubmit('forgot')} disabled={authLoading}>
+              <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} style={{ width: '100%', padding: '8px', fontSize: '0.9rem', boxShadow: '0 4px 15px rgba(47, 185, 214, 0.2)' }} onClick={() => handleAuthSubmit('forgot')} disabled={authLoading}>
                 {authLoading ? 'Sending...' : 'Send Reset Link'}
-              </button>
+              </motion.button>
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-                <span style={{ color: '#00bfff', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setAuthView('login')}>Back to Login</span>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '6px' }}>
+                <span style={{ color: '#444', fontSize: '0.85rem', cursor: 'pointer', fontWeight: 'bold' }} onClick={() => setAuthView('login')}>Back to Login</span>
               </div>
             </>
           )}
 
           {(authView === 'login' || authView === 'signup') && (
-            <button style={{ width: '100%', background: 'transparent', color: '#444', marginTop: '8px', border: 'none', fontSize: '0.75rem', boxShadow: 'none' }} onClick={() => { setShowLogin(false); setPendingSection(null); setAuthView('login'); }}>[Cancel & Return to Home]</button>
+            <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} style={{ width: '100%', background: 'transparent', color: '#444', marginTop: '8px', border: 'none', fontSize: '0.75rem', boxShadow: 'none' }} onClick={() => { setShowLogin(false); setPendingSection(null); setAuthView('login'); }}>[Cancel & Return to Home]</motion.button>
           )}
         </div>
       </div>
@@ -1230,42 +1254,28 @@ function App() {
   };
 
   // ── Main Return ────────────────────────────────────────────────
-return (
-  <>
-    {renderAuthModal()}
-
-    {/* Hamburger Button - Mobile Only */}
-    <button
-      className={`hamburger-btn ${sidebarOpen ? 'open' : ''}`}
-      onClick={() => setSidebarOpen(o => !o)}
-      aria-label="Toggle menu">
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
-
-    {/* Overlay - closes sidebar when tapped */}
-    {sidebarOpen && (
-      <div
-        className="sidebar-overlay"
-        onClick={() => setSidebarOpen(false)}
-      />
-    )}
-
-    <div className="layout">
-      <div className={`sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
-        {renderSidebar_content()}
-      </div>
-      <div className="content-area">
-          {activeSection === 'new' && renderNewProject()}
+  return (
+    <>
+      {systemAlert && (
+        <div className="system-alert">
+          {systemAlert}
+        </div>
+      )}
+      {renderAuthModal()}
+      <button className="hamburger-btn" onClick={() => setIsSidebarOpen(!isSidebarOpen)}>☰</button>
+      <div className="layout">
+        {renderSidebar()}
+        <div className="content-area">
+          {activeSection === 'home' && renderHome()}
+          {activeSection === 'services' && renderNewProject()}
           {activeSection === 'soul' && renderSoulSearch()}
           {activeSection === 'file' && renderFileManager()}
           {activeSection === 'view' && renderProjectView()}
           {activeSection === 'multi' && renderMultiProject()}
           {activeSection === 'reminders' && renderReminders()}
-      </div>
+        </div>
         {chatOpen && renderChatPanel()}
-    </div>
+      </div>
     </>
   );
 }
