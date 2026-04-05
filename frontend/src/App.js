@@ -18,7 +18,7 @@ function App() {
 
   const [savedProjects, setSavedProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
-  const [activeSection, setActiveSection] = useState('services');
+  const [activeSection, setActiveSection] = useState('home');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -69,11 +69,8 @@ function App() {
       setIsAuthenticated(true);
       setShowLogin(false);
       setActiveSection(pendingSection || 'services');
-      if (pendingSection) {
-        setActiveSection(pendingSection);
-        setActiveProjectId(null);
-        setPendingSection(null);
-      }
+      setActiveProjectId(null);
+      setPendingSection(null);
       window.history.replaceState({}, document.title, '/');
     }
   }, []);// eslint-disable-line react-hooks/exhaustive-deps
@@ -273,7 +270,7 @@ function App() {
       const formData = new FormData();
       formData.append('project_name', fileProject.name);
       formData.append('deadline', fileProject.deadline);
-      files.forEach(f => formData.append('file', f));
+      files.forEach(f => formData.append('files', f));
       const res = await axios.post(`${API_BASE}/file-manager/upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
@@ -674,10 +671,34 @@ function App() {
   // ── Render New Project ─────────────────────────────────────────
 
   const renderHome = () => (
-    <div className="home-dashboard" style={{ textAlign: 'center', marginTop: '10vh' }}>
-      <h1 style={{ fontSize: '3rem', marginBottom: '8px' }}>Welcome to AuraFlow</h1>
-      <p style={{ fontSize: '1.2rem', color: '#111111', marginBottom: '40px' }}>Your sketchbook for strategic planning and execution.</p>
-      <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} onClick={() => attemptNavigation('services')} style={{ fontSize: '1.5rem', padding: '20px 40px' }}>
+    <div className="home-dashboard" style={{
+      textAlign: 'center',
+      marginTop: '15vh',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '20px'
+    }}>
+      <img src="/logo192.png" alt="AuraFlow" style={{
+        width: '80px', height: '80px', borderRadius: '50%',
+        marginBottom: '8px'
+      }} />
+      <h1 style={{ fontSize: '3.5rem', marginBottom: '0px' }}>Welcome to AuraFlow</h1>
+      <p style={{ fontSize: '1.1rem', color: '#555', maxWidth: '500px', lineHeight: '1.6' }}>
+        Your AI-powered strategic engine for GenZ freelancers. Research markets, manage projects, and win clients — all in one place.
+      </p>
+      <motion.button
+        whileTap={{ scale: 0.9, opacity: 0.8 }}
+        transition={{ duration: 0.1 }}
+        onClick={() => {
+          if (!isAuthenticated) {
+            setPendingSection('services');
+            setShowLogin(true);
+          } else {
+            setActiveSection('services');
+          }
+        }}
+        style={{ fontSize: '1.2rem', padding: '16px 40px', marginTop: '10px' }}>
         Get Started →
       </motion.button>
     </div>
@@ -1279,6 +1300,7 @@ function App() {
         <div className="content-area">
           {activeSection === 'home' && renderHome()}
           {activeSection === 'services' && renderNewProject()}
+          {(activeSection === 'new' || !activeSection) && renderNewProject()}
           {activeSection === 'soul' && renderSoulSearch()}
           {activeSection === 'file' && renderFileManager()}
           {activeSection === 'view' && renderProjectView()}
