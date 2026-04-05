@@ -18,7 +18,7 @@ function App() {
 
   const [savedProjects, setSavedProjects] = useState([]);
   const [activeProjectId, setActiveProjectId] = useState(null);
-  const [activeSection, setActiveSection] = useState('home');
+  const [activeSection, setActiveSection] = useState('services');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -62,20 +62,21 @@ function App() {
   }, [systemAlert]);
 
   useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const loggedIn = params.get('logged_in');
-  const user = params.get('user');
-  if (loggedIn === 'true' && user) {
-    setIsAuthenticated(true);
-    setShowLogin(false);
-    if (pendingSection) {
-      setActiveSection(pendingSection);
-      setActiveProjectId(null);
-      setPendingSection(null);
+    const params = new URLSearchParams(window.location.search);
+    const loggedIn = params.get('logged_in');
+    const user = params.get('user');
+    if (loggedIn === 'true' && user) {
+      setIsAuthenticated(true);
+      setShowLogin(false);
+      setActiveSection(pendingSection || 'services');
+      if (pendingSection) {
+        setActiveSection(pendingSection);
+        setActiveProjectId(null);
+        setPendingSection(null);
+      }
+      window.history.replaceState({}, document.title, '/');
     }
-    window.history.replaceState({}, document.title, '/');
-  }
-}, []);// eslint-disable-line react-hooks/exhaustive-deps
+  }, []);// eslint-disable-line react-hooks/exhaustive-deps
 
 
   const attemptNavigation = (section) => {
@@ -136,7 +137,7 @@ function App() {
   const deleteProject = (id) => {
     const updated = savedProjects.filter(p => p.id !== id);
     saveProjects(updated);
-    if (activeProjectId === id) { setActiveProjectId(null); setActiveSection('new'); }
+    if (activeProjectId === id) { setActiveProjectId(null); setActiveSection('services'); }
   };
 
   const openProject = (project) => {
@@ -154,7 +155,7 @@ function App() {
 
   const startNew = () => {
     setActiveProjectId(null);
-    setActiveSection('new');
+    setActiveSection('services');
     setStep(1);
     setProjectData({ project_name: '', project_type: '', description: '', depth: 'medium', specific_url: '' });
     setSoulReport(null);
@@ -177,7 +178,7 @@ function App() {
     return [];
   };
 
-  const getSourceIcon = (source) => source === 'soul' ? '<svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>' : '<svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>';
+  const getSourceIcon = (source) => source === 'soul' ? <svg style={{ width: "24px", height: "24px", verticalAlign: "middle", marginRight: "12px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> : <svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>;
 
   const getDaysColor = (days) => {
     if (days <= 3) return '#ff6b6b';
@@ -538,15 +539,15 @@ function App() {
   const renderSidebar = () => (
     <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
       <div className="sidebar-header" onClick={startNew} style={{ cursor: 'pointer' }}>
-        <div style={{display:'flex', alignItems:'center'}}>
-          <img src="/logo192.png" alt="AuraFlow" style={{width: '32px', height: '32px', borderRadius: '50%', marginRight: '8px'}} />
-          <h1>AuraFlow</h1>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <img src="/logo192.png" alt="AuraFlow" style={{ width: '32px', height: '32px', borderRadius: '50%', marginRight: '8px', marginTop: '-4px' }} />
+          <h1 style={{ margin: 0 }}>AuraFlow</h1>
         </div>
         <p>Strategic Engine</p>
       </div>
       <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className="new-project-btn" onClick={startNew}>+ New Project</motion.button>
       <div className="sidebar-section">
-        <span className="sidebar-label"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> PROJECTS</span>
+        <span className="sidebar-label"><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> PROJECTS</span>
         <div className="project-list">
           {savedProjects.filter(p => p.source !== 'multi').length === 0 && (
             <p className="no-projects">No projects yet.</p>
@@ -574,17 +575,17 @@ function App() {
         </div>
       </div>
       <div className="sidebar-section">
-        <span className="sidebar-label"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>TOOLS</span>
+        <span className="sidebar-label"><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"></path></svg>TOOLS</span>
         <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className={`tool-btn ${activeSection === 'multi' ? 'active' : ''}`}
           onClick={() => attemptNavigation('multi')}>
-          <svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Multi-Project
+          <svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Multi-Project
           {savedProjects.filter(p => p.source === 'file').length >= 2 && (
             <span className="ready-badge">Ready</span>
           )}
         </motion.button>
         <motion.button whileTap={{ scale: 0.9, opacity: 0.8 }} transition={{ duration: 0.1 }} className={`tool-btn ${activeSection === 'reminders' ? 'active' : ''}`}
           onClick={() => attemptNavigation('reminders')}>
-          <svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>Reminders
+          <svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>Reminders
           {reminders.filter(r => r.urgency === 'high').length > 0 && (
             <span className="urgent-badge">{reminders.filter(r => r.urgency === 'high').length}</span>
           )}
@@ -616,7 +617,7 @@ function App() {
       <div className="chat-panel">
         <div className="chat-header">
           <div className="chat-header-info">
-            <img src="/logo192.png" alt="avatar" className="chat-avatar" style={{borderRadius: '50%', width:'36px', height:'36px'}} />
+            <img src="/logo192.png" alt="avatar" className="chat-avatar" style={{ borderRadius: '50%', width: '36px', height: '36px' }} />
             <div>
               <span className="chat-title">AuraFlow Assistant</span>
               <span className="chat-subtitle">
@@ -630,14 +631,14 @@ function App() {
         <div className="chat-messages">
           {chatMessages.map((msg, i) => (
             <div key={i} className={`chat-message ${msg.role}`}>
-              {msg.role === 'assistant' && <img src="/logo192.png" alt="ai" className="chat-msg-avatar" style={{borderRadius: '50%', width:'28px', height:'28px'}} />}
+              {msg.role === 'assistant' && <img src="/logo192.png" alt="ai" className="chat-msg-avatar" style={{ borderRadius: '50%', width: '28px', height: '28px' }} />}
               <div className="chat-bubble">{msg.content}</div>
               {msg.role === 'user' && <span className="chat-msg-avatar user-av">👤</span>}
             </div>
           ))}
           {chatLoading && (
             <div className="chat-message assistant">
-              <img src="/logo192.png" alt="ai" className="chat-msg-avatar" style={{borderRadius: '50%', width:'28px', height:'28px'}} />
+              <img src="/logo192.png" alt="ai" className="chat-msg-avatar" style={{ borderRadius: '50%', width: '28px', height: '28px' }} />
               <div className="chat-bubble typing">
                 <span></span><span></span><span></span>
               </div>
@@ -690,13 +691,13 @@ function App() {
       </div>
       <div className="new-project-options">
         <div className="option-card" onClick={() => attemptNavigation('soul')}>
-          <span className="option-icon"><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
+          <span className="option-icon"><svg style={{ width: "24px", height: "24px", verticalAlign: "middle", marginRight: "12px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></span>
           <h3>Soul Search</h3>
           <p>Real-time market research, competitor analysis, and strategic positioning</p>
           <span className="option-tag">Research + Strategy</span>
         </div>
         <div className="option-card" onClick={() => attemptNavigation('file')}>
-          <span className="option-icon"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></span>
+          <span className="option-icon"><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg></span>
           <h3>File Manager</h3>
           <p>Upload project files and AI will analyze, segregate, and create a deadline-aware plan</p>
           <span className="option-tag">Files + Planning</span>
@@ -718,7 +719,7 @@ function App() {
       </div>
       {step === 1 && (
         <div className="card">
-          <h2><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Soul Search</h2>
+          <h2><svg style={{ width: "24px", height: "24px", verticalAlign: "middle", marginRight: "12px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Soul Search</h2>
           <p>Enter your project details for real-time market research and strategic analysis.</p>
           <input placeholder="Project Name" value={projectData.project_name}
             onChange={e => setProjectData({ ...projectData, project_name: e.target.value })} />
@@ -729,7 +730,7 @@ function App() {
           <select value={projectData.depth}
             onChange={e => setProjectData({ ...projectData, depth: e.target.value })}>
             <option value="quick">⚡ Quick (10 mins)</option>
-            <option value="medium"><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Medium (45 mins)</option>
+            <option value="medium"><svg style={{ width: "24px", height: "24px", verticalAlign: "middle", marginRight: "12px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> Medium (45 mins)</option>
             <option value="deep">🧠 Deep (2 hours)</option>
           </select>
           <div style={{ marginTop: '4px' }}>
@@ -781,7 +782,7 @@ function App() {
   const renderFileManager = () => (
     <div className="main-content">
       <div className="card">
-        <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> File Manager</h2>
+        <h2><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> File Manager</h2>
         <p>Upload your project files and AI will deeply analyze, expand ideas, and generate a deadline-aware plan.</p>
         <input placeholder="Project Name" value={fileProject.name}
           onChange={e => setFileProject({ ...fileProject, name: e.target.value })} />
@@ -813,7 +814,7 @@ function App() {
           <div className="segregated">
             <div className="saved-notice">✅ Project saved to sidebar!</div>
             <div className="project-meta">
-              <span className="meta-tag"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {segregatedData.project_type}</span>
+              <span className="meta-tag"><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {segregatedData.project_type}</span>
               <span className="meta-tag">📅 {segregatedData.days_remaining} days remaining</span>
               <span className="meta-tag">🗓️ Due: {segregatedData.deadline}</span>
             </div>
@@ -846,7 +847,7 @@ function App() {
       return (
         <div className="main-content">
           <div className="view-header">
-            <h2><svg style={{width:"24px", height:"24px", verticalAlign:"middle", marginRight:"12px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> {project.project_name}</h2>
+            <h2><svg style={{ width: "24px", height: "24px", verticalAlign: "middle", marginRight: "12px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg> {project.project_name}</h2>
             <span className="view-type">{project.project_type}</span>
           </div>
           {project.soul_report && <div className="card"><h3>✨ Soul Report</h3>{renderSoulReportCard(project.soul_report)}</div>}
@@ -859,12 +860,12 @@ function App() {
     return (
       <div className="main-content">
         <div className="view-header">
-          <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {project.project_name}</h2>
+          <h2><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {project.project_name}</h2>
           <span className="view-type">{data?.project_type}</span>
         </div>
         <div className="card">
           <div className="project-meta">
-            <span className="meta-tag"><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {data?.project_type}</span>
+            <span className="meta-tag"><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> {data?.project_type}</span>
             <span className="meta-tag">📅 {data?.days_remaining} days remaining</span>
             <span className="meta-tag">🗓️ Due: {data?.deadline}</span>
           </div>
@@ -893,7 +894,7 @@ function App() {
     return (
       <div className="main-content">
         <div className="card">
-          <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Multi-Project Manager</h2>
+          <h2><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>Multi-Project Manager</h2>
           <p>Analyze all pending projects and get an optimized master plan.</p>
           {fileProjects.length === 0 && (
             <div className="empty-state">
@@ -1021,7 +1022,7 @@ function App() {
     return (
       <div className="main-content">
         <div className="card">
-          <h2><svg style={{width:"20px", height:"20px", verticalAlign:"middle", marginRight:"8px"}} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>Reminders</h2>
+          <h2><svg style={{ width: "20px", height: "20px", verticalAlign: "middle", marginRight: "8px" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>Reminders</h2>
           <p>Auto-generated reminders based on your project deadlines, milestones, and gaps.</p>
           {reminders.length === 0 && (
             <div className="empty-state">
@@ -1082,7 +1083,7 @@ function App() {
   // ── Flash Screen & Login Modal ─────────────────────────────────
   if (showFlash) {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#030f1a', zIndex: 9999, position: 'relative' }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F5F5F5', zIndex: 9999, position: 'relative' }}>
         <style>{`
            @keyframes professionalFade {
              0% { opacity: 0; transform: scale(0.98) translateY(10px); }
@@ -1091,9 +1092,13 @@ function App() {
              100% { opacity: 0; transform: scale(0.98) translateY(-10px); }
            }
          `}</style>
-        <h1 style={{ fontSize: '3.5rem', color: '#111111', fontWeight: 500, letterSpacing: '0.5px', margin: 0, animation: 'professionalFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ marginRight: '8px' }}>🌊</span>AuraFlow
+        <h1 style={{ fontFamily: "'Kalam', cursive", fontSize: '4.5rem', color: '#1A1A1A', fontWeight: 700, margin: 0, animation: 'professionalFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <img src="/logo192.png" alt="logo" style={{ width: '64px', height: '64px', borderRadius: '50%', marginRight: '16px', marginTop: '-8px' }} />
+          AuraFlow
         </h1>
+        <p style={{ fontFamily: "'Kalam', cursive", fontSize: '1.2rem', color: '#555', marginTop: '10px', animation: 'professionalFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards' }}>
+          Strategic Engine
+        </p>
       </div>
     );
   }
@@ -1152,7 +1157,10 @@ function App() {
 
           {authView === 'login' && (
             <>
-              <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem' }}>🌊 AuraFlow Access</h2>
+              <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/logo192.png" alt="logo" style={{ width: '28px', height: '28px', borderRadius: '50%', marginRight: '8px', marginTop: '-4px' }} />
+                AuraFlow Access
+              </h2>
               <p style={{ color: '#333', marginBottom: '10px', fontSize: '0.9rem' }}>Please authenticate to access the engine core.</p>
 
               <input placeholder="Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '6px', textAlign: 'center' }} />
@@ -1190,7 +1198,10 @@ function App() {
 
           {authView === 'signup' && (
             <>
-              <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem' }}>🌊 Join AuraFlow</h2>
+              <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <img src="/logo192.png" alt="logo" style={{ width: '28px', height: '28px', borderRadius: '50%', marginRight: '8px', marginTop: '-4px' }} />
+                Join AuraFlow
+              </h2>
               <p style={{ color: '#333', marginBottom: '10px', fontSize: '0.9rem' }}>Create an account to unlock the strategic engine.</p>
 
               <input placeholder="Email Address" value={loginForm.email} onChange={e => { setAuthError(''); setLoginForm({ ...loginForm, email: e.target.value }); }} style={{ marginBottom: '6px', textAlign: 'center' }} />
