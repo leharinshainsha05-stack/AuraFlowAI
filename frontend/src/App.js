@@ -43,7 +43,7 @@ function App() {
   // ── Chat State ─────────────────────────────────────────────────
   const [chatOpen, setChatOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState([
-    { role: 'assistant', content: "Hey! I'm your AuraFlow AI assistant 👋 I know all your projects and deadlines. Ask me anything — \"What should I work on today?\" or \"How is Atelier going?\"" }
+    { role: 'assistant', content: "Hey! I'm your Velow AI assistant 👋 I know all your projects and deadlines. Ask me anything — \"What should I work on today?\" or \"How is Atelier going?\"" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [chatLoading, setChatLoading] = useState(false);
@@ -89,9 +89,9 @@ function App() {
   };
 
   useEffect(() => {
-    const stored = localStorage.getItem('auraflow_projects');
+    const stored = localStorage.getItem('Velow_projects');
     if (stored) setSavedProjects(JSON.parse(stored));
-    const storedReminders = localStorage.getItem('auraflow_reminders');
+    const storedReminders = localStorage.getItem('Velow_reminders');
     if (storedReminders) setReminders(JSON.parse(storedReminders));
   }, []);
 
@@ -111,12 +111,12 @@ function App() {
 
   const saveProjects = (updated) => {
     setSavedProjects(updated);
-    localStorage.setItem('auraflow_projects', JSON.stringify(updated));
+    localStorage.setItem('Velow_projects', JSON.stringify(updated));
   };
 
   const saveReminders = (updated) => {
     setReminders(updated);
-    localStorage.setItem('auraflow_reminders', JSON.stringify(updated));
+    localStorage.setItem('Velow_reminders', JSON.stringify(updated));
   };
 
   const addProject = (project) => {
@@ -213,7 +213,7 @@ function App() {
     const updated = [...reminders, ...newReminders];
     saveReminders(updated);
     if (Notification.permission === 'granted') {
-      new Notification(`AuraFlow: ${pd.project_name}`, { body: `${daysLeft} days left!` });
+      new Notification(`Velow: ${pd.project_name}`, { body: `${daysLeft} days left!` });
     } else if (Notification.permission !== 'denied') {
       Notification.requestPermission();
     }
@@ -247,7 +247,7 @@ function App() {
     try {
       const res = await axios.post(`${API_BASE}/pitch-deck`, {
         soul_report: soulReport, project_plan: projectPlan,
-        project_name: projectData.project_name, team_name: 'AuraFlow Team'
+        project_name: projectData.project_name, team_name: 'Velow Team'
       });
       setPitchDeck(res.data.pitch_deck);
       setStep(4);
@@ -537,8 +537,8 @@ function App() {
     <div className={`sidebar ${isSidebarOpen ? 'open' : ''}`}>
       <div className="sidebar-header" onClick={startNew} style={{ cursor: 'pointer' }}>
         <div style={{ display: 'flex', alignItems: 'center' }}>
-          <img src="/logo192.png" alt="AuraFlow" style={{ width: '32px', height: '32px', borderRadius: '50%', marginRight: '8px', marginTop: '-4px' }} />
-          <h1 style={{ margin: 0 }}>AuraFlow</h1>
+          <img src="/logo192.png" alt="Velow" style={{ width: '32px', height: '32px', borderRadius: '50%', marginRight: '8px', marginTop: '-4px' }} />
+          <h1 style={{ margin: 0 }}>Velow</h1>
         </div>
         <p>Strategic Engine</p>
       </div>
@@ -602,7 +602,7 @@ function App() {
             color: 'white', fontWeight: '600', cursor: 'pointer',
             fontSize: '0.88rem', marginTop: '0'
           }}>
-          {chatOpen ? '✕ Close Assistant' : '💬 Ask AuraFlow AI'}
+          {chatOpen ? '✕ Close Assistant' : '💬 Ask Velow AI'}
         </motion.button>
       </div>
     </div>
@@ -616,7 +616,7 @@ function App() {
           <div className="chat-header-info">
             <img src="/logo192.png" alt="avatar" className="chat-avatar" style={{ borderRadius: '50%', width: '36px', height: '36px' }} />
             <div>
-              <span className="chat-title">AuraFlow Assistant</span>
+              <span className="chat-title">Velow Assistant</span>
               <span className="chat-subtitle">
                 Knows your {savedProjects.length} project{savedProjects.length !== 1 ? 's' : ''}
               </span>
@@ -679,11 +679,11 @@ function App() {
       alignItems: 'center',
       gap: '20px'
     }}>
-      <img src="/logo192.png" alt="AuraFlow" style={{
+      <img src="/logo192.png" alt="Velow" style={{
         width: '80px', height: '80px', borderRadius: '50%',
         marginBottom: '8px'
       }} />
-      <h1 style={{ fontSize: '3.5rem', marginBottom: '0px' }}>Welcome to AuraFlow</h1>
+      <h1 style={{ fontSize: '3.5rem', marginBottom: '0px' }}>Welcome to Velow</h1>
       <p style={{ fontSize: '1.1rem', color: '#555', maxWidth: '500px', lineHeight: '1.6' }}>
         Your AI-powered strategic engine for GenZ freelancers. Research markets, manage projects, and win clients — all in one place.
       </p>
@@ -1115,7 +1115,7 @@ function App() {
          `}</style>
         <h1 style={{ fontFamily: "'Kalam', cursive", fontSize: '4.5rem', color: '#1A1A1A', fontWeight: 700, margin: 0, animation: 'professionalFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <img src="/logo192.png" alt="logo" style={{ width: '64px', height: '64px', borderRadius: '50%', marginRight: '16px', marginTop: '-8px' }} />
-          AuraFlow
+          Velow
         </h1>
         <p style={{ fontFamily: "'Kalam', cursive", fontSize: '1.2rem', color: '#555', marginTop: '10px', animation: 'professionalFade 2.5s cubic-bezier(0.4, 0, 0.2, 1) forwards' }}>
           Strategic Engine
@@ -1180,7 +1180,7 @@ function App() {
             <>
               <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <img src="/logo192.png" alt="logo" style={{ width: '28px', height: '28px', borderRadius: '50%', marginRight: '8px', marginTop: '-4px' }} />
-                AuraFlow Access
+                Velow Access
               </h2>
               <p style={{ color: '#333', marginBottom: '10px', fontSize: '0.9rem' }}>Please authenticate to access the engine core.</p>
 
@@ -1221,7 +1221,7 @@ function App() {
             <>
               <h2 style={{ color: '#111111', marginBottom: '4px', fontSize: '1.4rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <img src="/logo192.png" alt="logo" style={{ width: '28px', height: '28px', borderRadius: '50%', marginRight: '8px', marginTop: '-4px' }} />
-                Join AuraFlow
+                Join Velow
               </h2>
               <p style={{ color: '#333', marginBottom: '10px', fontSize: '0.9rem' }}>Create an account to unlock the strategic engine.</p>
 
