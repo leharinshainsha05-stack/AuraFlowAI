@@ -1,6 +1,6 @@
-# AuraFlow AI - Strategic Engine
+# AuraFlow AI(Velow) - Strategic Engine
 
-?? **Live Demo:** https://auraflow-frontend-p0iqp833i-leharinshainsha05-stacks-projects.vercel.app
+?? **Live Demo:** [https://auraflow-frontend-p0iqp833i-leharinshainsha05-stacks-projects.vercel.app](https://velow-ai-chi.vercel.app/)
 
 > **Note for Judges:** The live demo shows the full UI. For complete AI functionality, please run locally using the setup instructions below. The backend is hosted on Render free tier which may need 1-2 minutes to wake up on first request.
 
